@@ -1,124 +1,84 @@
 # Cesium Terrain Server
 
-A basic server for serving up filesystem based tilesets representing
-[Cesium.js](http://cesiumjs.org/) terrain models.  The resources served up are
-intended for use with the
-[`CesiumTerrainProvider`](http://cesiumjs.org/Cesium/Build/Documentation/CesiumTerrainProvider.html)
-JavaScript class present in the Cesium.js client.
+[![GitHub stars](https://img.shields.io/github/stars/nmccready/cesium-terrain-server.svg?style=social)](https://github.com/nmccready/cesium-terrain-server)
+[![Go Report Card](https://goreportcard.com/badge/github.com/nmccready/cesium-terrain-server)](https://goreportcard.com/report/github.com/nmccready/cesium-terrain-server)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
-This has specifically been created for easing the development and testing of
-terrain tilesets created using the
-[Cesium Terrain Builder](https://github.com/geo-data/cesium-terrain-builder)
-tools.
+**A lightweight Go server for hosting [CesiumJS](http://cesiumjs.org/) terrain tilesets.** Serves filesystem-based terrain tiles for use with [`CesiumTerrainProvider`](http://cesiumjs.org/Cesium/Build/Documentation/CesiumTerrainProvider.html), with optional Memcached caching and Docker support.
 
-This project also provides a [Docker](https://www.docker.com/) container to
-further simplify deployment of the server and testing of tilesets.  See the
-[Docker Registry](https://registry.hub.docker.com/u/nmccready/cesium-terrain-server/)
-for further details.
+Built for use with tilesets created by [Cesium Terrain Builder](https://github.com/geo-data/cesium-terrain-builder).
 
-## Usage
+## Install
 
-The terrain server is a self contained binary with the following command line
-options:
-
-```sh
-$ cesium-terrain-server:
-  -base-terrain-url="/tilesets": base url prefix under which all tilesets are served
-  -cache-limit=1.00MB: the memory size in bytes beyond which resources are not cached. Other memory units can be specified by suffixing the number with kB, MB, GB or TB
-  -dir=".": the root directory under which tileset directories reside
-  -log-level=notice: level at which logging occurs. One of crit, err, notice, debug
-  -memcached="": (optional) memcached connection string for caching tiles e.g. localhost:11211
-  -no-request-log=false: do not log client requests for resources
-  -port=8000: the port on which the server listens
-  -web-dir="": (optional) the root directory containing static files to be served
+```bash
+go get github.com/nmccready/cesium-terrain-server/cmd/cesium-terrain-server
 ```
 
-Assume you have the following (small) terrain tileset (possibly created with
-[`ctb-tile`](https://github.com/geo-data/cesium-terrain-builder#ctb-tile)):
+Or use Docker:
 
-```
-/data/tilesets/terrain/srtm/
-├── 0
-│   └── 0
-│       └── 0.terrain
-├── 1
-│   └── 1
-│       └── 1.terrain
-├── 2
-│   └── 3
-│       └── 3.terrain
-└── 3
-    └── 7
-        └── 6.terrain
+```bash
+docker pull nmccready/cesium-terrain-server
 ```
 
-To serve this tileset on port `8080`, you would run the following command:
+## Quick Start
 
-```sh
+Given a terrain tileset at `/data/tilesets/terrain/srtm/`:
+
+```bash
 cesium-terrain-server -dir /data/tilesets/terrain -port 8080
 ```
 
-The tiles would then be available under <http://localhost:8080/tilesets/srtm/>
-(e.g. <http://localhost:8080/tilesets/srtm/0/0/0.terrain> for the root tile).
-This URL, for instance, is what you would use when configuring
-[`CesiumTerrainProvider`](http://cesiumjs.org/Cesium/Build/Documentation/CesiumTerrainProvider.html)
-in the Cesium client.
+Tiles are then available at `http://localhost:8080/tilesets/srtm/` — point your `CesiumTerrainProvider` there.
 
-Serving up additional tilesets is simply a matter of adding the tileset as a
-subdirectory to `/data/tilesets/terrain/`.  For example, adding a tileset
-directory called `lidar` to that location will result in the tileset being
-available under <http://localhost:8080/tilesets/lidar/>.
+## Usage
 
-Note that the `-web-dir` option can be used to serve up static assets on the
-filesystem in addition to tilesets.  This makes it easy to use the server to
-prototype and develop web applications around the terrain data.
+```
+cesium-terrain-server [options]
+
+  -dir="."                  Root directory containing tileset directories
+  -port=8000                Server port
+  -base-terrain-url="/tilesets"  URL prefix for all tilesets
+  -cache-limit=1.00MB       Max resource size for caching (supports kB, MB, GB, TB)
+  -memcached=""              Memcached address for tile caching (e.g. localhost:11211)
+  -web-dir=""                Directory for serving static files
+  -log-level=notice          Log level: crit, err, notice, debug
+  -no-request-log=false      Suppress client request logging
+```
+
+### Adding Tilesets
+
+Just drop tileset directories under your root dir. For example:
+
+```
+/data/tilesets/terrain/
+├── srtm/          → http://localhost:8080/tilesets/srtm/
+├── lidar/         → http://localhost:8080/tilesets/lidar/
+└── custom/        → http://localhost:8080/tilesets/custom/
+```
 
 ### `layer.json`
 
-The `CesiumTerrainProvider` Cesium.js class requires that a `layer.json`
-resource is present describing the terrain tileset.  The `ctb-tile` utility does
-not create this file.  If a `layer.json` file is present in the root directory
-of the tileset then this file will be returned by the server when the client
-requests it.  If the file is not found then the server will return a default
-resource.
+`CesiumTerrainProvider` requires a `layer.json` file. If one exists in your tileset root, it's served as-is. Otherwise, the server returns a sensible default.
 
-### Root tiles
+### Root Tiles
 
-The Cesium javascript client requires that the two top level tiles representing
-zoom level `0` are always present.  These tiles are represented by the
-`0/0/0.terrain` and `0/1/0.terrain` resources. When creating tilesets using the
-`ctb-tile` utility only one of these tiles will be generated *unless* the source
-terrain dataset intersects with the prime meridian.  The terrain server
-addresses this issue by serving up a blank terrain tile if a top level tile is
-requested which does not also exist on the filesystem.
+Cesium requires both `0/0/0.terrain` and `0/1/0.terrain`. If one is missing (common when your dataset doesn't cross the prime meridian), the server returns a blank tile automatically.
 
-### Caching tiles with Memcached
+### Memcached Caching
 
-The terrain server can use a memcache server to cache tileset data. It is
-important to note that the terrain server does not use the cache itself, it only
-populates it for each request.  The idea is that a reverse proxy attached to the
-memcache (such as Nginx) will first attempt to fulfil a request from the cache
-before falling back to the terrain server, which will then update the cache.
+Use with a reverse proxy (e.g. Nginx) for production caching:
 
-Enabling this functionality requires specifying the network address of a
-memcached server (including the port) using the `-memcached` option.  E.g. A
-memcached server running at `memcache.me.org` on port `11211` can be used as
-follows:
-
-```sh
+```bash
 cesium-terrain-server -dir /data/tilesets/terrain -memcached memcache.me.org:11211
 ```
 
-If present, the terrain server uses the value of the custom `X-Memcache-Key`
-header as the memcache key, otherwise it uses the value of the request URI.  A
-minimal Nginx configuration setting `X-Memcache-Key` is as follows:
+<details>
+<summary>Example Nginx configuration</summary>
 
-```
+```nginx
 server {
     listen 80;
-
     server_name localhost;
-
     root /var/www/app;
     index index.html;
 
@@ -140,65 +100,32 @@ server {
 }
 ```
 
-The `-cache-limit` option can be used in conjunction with the above to change
-the memory limit at which resources are considered to large for the cache.
+</details>
 
-## Installation
+## Development
 
-The server is written in [Go](http://golang.org/) and requires Go to be present
-on the system when compiling it from source.  As such, it should run everywhere
-that Go does.  Assuming that you have set the
-[GOPATH](https://golang.org/cmd/go/#hdr-GOPATH_environment_variable),
-installation is a matter of running `go install`:
+```bash
+# Build from source
+make
 
-```sh
-go get github.com/nmccready/cesium-terrain-server/cmd/cesium-terrain-server
+# Build Docker image
+make docker-local
 ```
 
-A program called `cesium-terrain-server` should then be available under your
-`GOPATH` (or `GOBIN` location if set).
+Requires Go with `GOPATH`, `GOROOT`, and `GOBIN` set. See the Makefile for details.
 
-## Developing
+## Contributing
 
-The code has been developed on a Linux/macOS platform. After downloading the package
-you should be able to run `make` from the project root to build the server,
-which will be available as `./bin/cesium-terrain-server`.
+Please report bugs via the [GitHub issue tracker](https://github.com/nmccready/cesium-terrain-server/issues). Pull requests welcome!
 
-Note: Getting this building has been an absolute blast ... (not really many fixes)
+## Sponsor
 
-Note: to make things mich less painful make sure you have set
-
-- `GOPATH`
-- `GOROOT`
-- `GOBIN`
-- `GO111MODULE` - optional
-
-macOS / brew example ~/.zshrc
-
-```.zshrc
-export GOPATH="$HOME/go"
-export GOROOT="$GOPATH"
-export GOBIN="$GOROOT"/bin
-# OPTIONAL, it might already be set
-export GO111MODULE=on
-```
-
-Executing `make docker-local` will create a docker image tagged
-`geodata/cesium-terrain-server:local` which when run with a bind mount to the
-project source directory is very handy for developing and testing. NOTE: for your local changes to take effect within a docker image the local changes must be committed!
-
-## Issues and Contributing
-
-Please report bugs or issues using the
-[GitHub issue tracker](https://github.com/nmccready/cesium-terrain-server).
-
-Code and documentation contributions are very welcome, either as GitHub pull
-requests or patches.
+If you find this project useful, consider [sponsoring @nmccready](https://github.com/sponsors/nmccready) to support ongoing maintenance and development. ❤️
 
 ## License
 
-The [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+[Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
-## Contact
+## Credits
 
-Homme Zwaagstra <hrz@geodata.soton.ac.uk>
+Originally created by Homme Zwaagstra at [GeoData](https://github.com/geo-data).

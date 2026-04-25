@@ -1,7 +1,7 @@
 # Cesium Terrain Server
 
-[![GitHub stars](https://img.shields.io/github/stars/nmccready/cesium-terrain-server.svg?style=social)](https://github.com/nmccready/cesium-terrain-server)
-[![Go Report Card](https://goreportcard.com/badge/github.com/nmccready/cesium-terrain-server)](https://goreportcard.com/report/github.com/nmccready/cesium-terrain-server)
+[![GitHub stars](https://img.shields.io/github/stars/brickhouse-tech/cesium-terrain-server.svg?style=social)](https://github.com/brickhouse-tech/cesium-terrain-server)
+[![Go Report Card](https://goreportcard.com/badge/github.com/brickhouse-tech/cesium-terrain-server)](https://goreportcard.com/report/github.com/brickhouse-tech/cesium-terrain-server)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
 **A lightweight Go server for hosting [CesiumJS](http://cesiumjs.org/) terrain tilesets.** Serves filesystem-based terrain tiles for use with [`CesiumTerrainProvider`](http://cesiumjs.org/Cesium/Build/Documentation/CesiumTerrainProvider.html), with optional Memcached caching and Docker support.
@@ -11,13 +11,13 @@ Built for use with tilesets created by [Cesium Terrain Builder](https://github.c
 ## Install
 
 ```bash
-go get github.com/nmccready/cesium-terrain-server/cmd/cesium-terrain-server
+go get github.com/brickhouse-tech/cesium-terrain-server/cmd/cesium-terrain-server
 ```
 
 Or use Docker:
 
 ```bash
-docker pull nmccready/cesium-terrain-server
+docker pull brickhouse-tech/cesium-terrain-server
 ```
 
 ## Quick Start
@@ -116,11 +116,11 @@ Requires Go with `GOPATH`, `GOROOT`, and `GOBIN` set. See the Makefile for detai
 
 ## Contributing
 
-Please report bugs via the [GitHub issue tracker](https://github.com/nmccready/cesium-terrain-server/issues). Pull requests welcome!
+Please report bugs via the [GitHub issue tracker](https://github.com/brickhouse-tech/cesium-terrain-server/issues). Pull requests welcome!
 
 ## Sponsor
 
-If you find this project useful, consider [sponsoring @nmccready](https://github.com/sponsors/nmccready) to support ongoing maintenance and development. ❤️
+If you find this project useful, consider [sponsoring @brickhouse-tech](https://github.com/sponsors/brickhouse-tech) to support ongoing maintenance and development. ❤️
 
 ## License
 

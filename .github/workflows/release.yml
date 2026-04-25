@@ -1,0 +1,17 @@
+name: release
+
+on:
+  push:
+    branches: ["master"]
+    paths-ignore:
+      - '.devcontainer/**'
+    tags-ignore: ['**']
+
+jobs:
+  tests:
+    uses: ./.github/workflows/tests.yml
+  tag-release:
+    needs: [tests]
+    uses: brickhouse-tech/.github/.github/workflows/release.yml@main
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}

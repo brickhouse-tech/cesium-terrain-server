@@ -3,7 +3,7 @@ package handlers
 import (
 	"fmt"
 	"github.com/bradfitz/gomemcache/memcache"
-	"github.com/nmccready/cesium-terrain-server/log"
+	"github.com/brickhouse-tech/cesium-terrain-server/log"
 	"net/http"
 	"net/url"
 )

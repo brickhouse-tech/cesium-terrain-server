@@ -3,7 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/nmccready/cesium-terrain-server/handlers"
+	"github.com/brickhouse-tech/cesium-terrain-server/handlers"
 	"strconv"
 )
 

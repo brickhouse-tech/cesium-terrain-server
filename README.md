@@ -1,5 +1,6 @@
 # Cesium Terrain Server
 
+[![tests](https://github.com/brickhouse-tech/cesium-terrain-server/actions/workflows/tests.yml/badge.svg)](https://github.com/brickhouse-tech/cesium-terrain-server/actions/workflows/tests.yml)
 [![GitHub stars](https://img.shields.io/github/stars/brickhouse-tech/cesium-terrain-server.svg?style=social)](https://github.com/brickhouse-tech/cesium-terrain-server)
 [![Go Report Card](https://goreportcard.com/badge/github.com/brickhouse-tech/cesium-terrain-server)](https://goreportcard.com/report/github.com/brickhouse-tech/cesium-terrain-server)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)

@@ -3,4 +3,7 @@ pkg
 src/github.com
 .go-bindata
 tmp
-assets
+# assets/assets.go is generated go-bindata but committed so CI (which has no
+# bindata generate step) can build; ignore everything else under assets/.
+assets/*
+!assets/assets.go

@@ -3,5 +3,4 @@ pkg
 src/github.com
 .go-bindata
 tmp
-go.sum
 assets

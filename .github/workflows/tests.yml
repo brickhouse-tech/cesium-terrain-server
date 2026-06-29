@@ -1,4 +1,4 @@
-name: tests
+name: ci
 
 on:
   workflow_call:
@@ -28,8 +28,8 @@ jobs:
       - name: Test
         run: go test ./...
 
-  tests:
-    name: tests
+  gate:
+    name: gate
     needs: [test]
     runs-on: ubuntu-latest
     if: always()
